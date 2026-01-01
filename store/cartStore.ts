@@ -1,0 +1,48 @@
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { CartStore } from "@/types/cart";
+
+
+
+const useCartStore = create<CartStore>()(
+  persist<CartStore>(
+    (set, get) => ({
+      cart: [],
+
+      addToCart: (product) => {
+        const cart = get().cart;
+
+        const existing = cart.find(
+          (item) => item.id === product.id
+        );
+
+        if (existing) {
+          set({
+            cart: cart.map((item) =>
+              item.id === product.id
+                ? { ...item, quantity: item.quantity + 1 }
+                : item
+            ),
+          });
+        } else {
+          set({
+            cart: [...cart, { ...product, quantity: 1 }],
+          });
+        }
+      },
+
+      removeFromCart: (id) => {
+        set({
+          cart: get().cart.filter((item) => item.id !== id),
+        });
+      },
+
+      clearCart: () => set({ cart: [] }),
+    }),
+    {
+      name: "cart-storage",
+    }
+  )
+);
+
+export default useCartStore;
